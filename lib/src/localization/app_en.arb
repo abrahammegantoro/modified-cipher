@@ -1,0 +1,6 @@
+{
+  "appTitle": "modified_cipher",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
