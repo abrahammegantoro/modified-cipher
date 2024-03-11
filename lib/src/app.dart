@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:modified_cipher/src/ciphers/cipher_details_view.dart';
 
-import 'sample_feature/sample_item_details_view.dart';
-import 'sample_feature/sample_item_list_view.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 import 'ciphers/cipher_list_view.dart';
@@ -64,20 +63,42 @@ class MyApp extends StatelessWidget {
           // Define a function to handle named routes in order to support
           // Flutter web url navigation and deep linking.
           onGenerateRoute: (RouteSettings routeSettings) {
-            return MaterialPageRoute<void>(
-              settings: routeSettings,
-              builder: (BuildContext context) {
-                switch (routeSettings.name) {
-                  case SettingsView.routeName:
-                    return SettingsView(controller: settingsController);
-                  case CipherListView.routeName:
-                    return const CipherListView();
-                  // case SampleItemListView.routeName:
-                  default:
-                    return const CipherListView();
-                }
-              },
-            );
+            // Check if arguments are provided
+            final args = routeSettings.arguments as Map<String, dynamic>?;
+
+            if (args != null &&
+                args.containsKey('title') &&
+                args.containsKey('description')) {
+              // Handle route for EncryptDecryptPage with dynamic title and description
+              return MaterialPageRoute<void>(
+                settings: routeSettings,
+                builder: (BuildContext context) => CipherDetailsView(
+                  title: args['title'],
+                  description: args['description'],
+                ),
+              );
+            } else {
+              // Handle other routes (e.g., cipher routes)
+              switch (routeSettings.name) {
+                case SettingsView.routeName:
+                  return MaterialPageRoute<void>(
+                    settings: routeSettings,
+                    builder: (BuildContext context) =>
+                        SettingsView(controller: settingsController),
+                  );
+                case CipherListView.routeName:
+                  return MaterialPageRoute<void>(
+                    settings: routeSettings,
+                    builder: (BuildContext context) => const CipherListView(),
+                  );
+                // Add more cases for other routes if needed
+                default:
+                  return MaterialPageRoute<void>(
+                    settings: routeSettings,
+                    builder: (BuildContext context) => const CipherListView(),
+                  );
+              }
+            }
           },
         );
       },

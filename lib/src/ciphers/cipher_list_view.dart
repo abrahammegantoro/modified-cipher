@@ -67,6 +67,10 @@ class CipherListView extends StatelessWidget {
               Navigator.restorablePushNamed(
                 context,
                 item.route,
+                arguments: {
+                  'title': item.title,
+                  'description': item.description,
+                },
               );
             },
             title: Row(
