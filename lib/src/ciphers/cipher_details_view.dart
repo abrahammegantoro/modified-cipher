@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:modified_cipher/src/method/rc4.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:path_provider/path_provider.dart';
 
 class CipherDetailsView extends StatefulWidget {
   final String title;
@@ -22,6 +24,7 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
   late TextEditingController _inputTextController;
   late TextEditingController _keyTextController;
   late String _resultText;
+  late String _fileType;
   bool _isEncryptMode = true;
   bool _isTextMode = true;
 
@@ -82,11 +85,30 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       File file = File(result.files.single.path!);
+      _fileType = result.files.single.extension!;
       List<int> fileBytes = await file.readAsBytes();
       String fileContents = String.fromCharCodes(fileBytes);
       return fileContents;
     } else {
       return '';
+    }
+  }
+
+  Future<void> _saveToFile() async {
+    try {
+      final Directory directory = Directory('/storage/emulated/0/Download/');
+      final File file = File('${directory.path}/result.$_fileType');
+
+      await file.writeAsString(_resultText,
+          mode: FileMode.write, encoding: utf8);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('File saved successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save file: $e')),
+      );
     }
   }
 
@@ -193,6 +215,11 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
               child: SingleChildScrollView(
                 child: Text(_resultText),
               ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _saveToFile,
+              child: const Text('Download'),
             ),
             // const SizedBox(height: 16),
             // const Text('Base 64:',

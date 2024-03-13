@@ -15,7 +15,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   file_picker: ^6.2.0
-  
+  flutter_downloader: ^1.11.6
+  path_provider: ^2.1.2
+  permission_handler: ^11.0.1
 
 dev_dependencies:
   flutter_test:
