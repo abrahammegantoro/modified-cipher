@@ -1,6 +1,6 @@
 class RC4 {
-  List<int> _key;
-  List<int> _s;
+  final List<int> _key;
+  final List<int> _s;
 
   RC4(List<int> key)
       : _key = List<int>.from(key),

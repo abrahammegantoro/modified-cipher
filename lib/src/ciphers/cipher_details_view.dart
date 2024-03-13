@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:modified_cipher/src/method/rc4.dart';
 
@@ -21,8 +22,8 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
   late TextEditingController _inputTextController;
   late TextEditingController _keyTextController;
   late String _resultText;
-  bool _isEncryptMode = true; // Default mode is encryption
-  bool _isTextMode = true; // Default input mode is text
+  bool _isEncryptMode = true;
+  bool _isTextMode = true;
 
   @override
   void initState() {
@@ -41,28 +42,15 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
 
   Future<void> _processData() async {
     String key = _keyTextController.text;
-    if (_isTextMode) {
-      // Text input mode
-      String inputText = _inputTextController.text;
-      // Perform encryption or decryption based on selected mode
-      _resultText = _isEncryptMode
-          ? encryptText(inputText, key)
-          : decryptText(inputText, key);
-    } else {
-      // File input mode
-      // Read file contents
-      String fileContents = await _readFile();
-      // Perform encryption or decryption based on selected mode
-      // _resultText = _isEncryptMode
-      //     ? encryptText(fileContents, key)
-      //     : decryptText(fileContents, key);
-    }
+    String inputText = _inputTextController.text;
+    _resultText = _isEncryptMode
+        ? encryptText(inputText, key)
+        : decryptText(inputText, key);
 
     setState(() {});
   }
 
   String encryptText(String input, String key) {
-    // Implement your encryption logic here
     if (key.isNotEmpty && input.isNotEmpty) {
       List<int> keyBytes = key.codeUnits;
       List<int> inputBytes = input.codeUnits;
@@ -79,7 +67,6 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
     if (input.isNotEmpty && key.isNotEmpty) {
       List<int> keyBytes = key.codeUnits;
 
-      // Decode Base64 input
       List<int> inputBytes = base64Decode(input);
 
       RC4 rc4 = RC4(keyBytes);
@@ -91,9 +78,16 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
     return '';
   }
 
-  Future<String> _readFile() async {
-    // Implement file selection logic here
-    return ''; // Return file contents as a string
+  Future<String> _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      List<int> fileBytes = await file.readAsBytes();
+      String fileContents = String.fromCharCodes(fileBytes);
+      return fileContents;
+    } else {
+      return '';
+    }
   }
 
   @override
@@ -161,7 +155,25 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
                           : 'Cipher text (base 64)', // Change label based on input mode
                     ),
                   )
-                : const SizedBox(), // Hide text input when file mode is selected
+                : Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          String fileContents = await _pickFile();
+                          _inputTextController.text = fileContents;
+                        },
+                        child: const Text('Choose File'),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _inputTextController,
+                        decoration: const InputDecoration(
+                          labelText: 'File Contents',
+                        ),
+                        readOnly: true,
+                      ),
+                    ],
+                  ), // Hide text input when file mode is selected
             const SizedBox(height: 16),
             TextField(
               controller: _keyTextController,
