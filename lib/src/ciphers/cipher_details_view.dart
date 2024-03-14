@@ -7,14 +7,11 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 
 class CipherDetailsView extends StatefulWidget {
-  final String title;
-  final String description;
-
   const CipherDetailsView({
     Key? key,
-    required this.title,
-    required this.description,
   }) : super(key: key);
+
+  static const routeName = '/';
 
   @override
   _CipherDetailsViewState createState() => _CipherDetailsViewState();
@@ -24,7 +21,7 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
   late TextEditingController _inputTextController;
   late TextEditingController _keyTextController;
   late String _resultText;
-  late String _fileType;
+  late String _fileType = '.txt';
   bool _isEncryptMode = true;
   bool _isTextMode = true;
 
@@ -116,7 +113,7 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text('Extended Vigenere Cipher & RC4'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
