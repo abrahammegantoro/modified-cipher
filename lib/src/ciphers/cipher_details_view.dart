@@ -3,8 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:modified_cipher/src/method/rc4.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:modified_cipher/src/settings/settings_view.dart';
 
 class CipherDetailsView extends StatefulWidget {
   const CipherDetailsView({
@@ -117,7 +116,6 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
       _fileType = result.files.single.extension!;
       List<int> fileBytes = await file.readAsBytes();
       _fileInput = fileBytes;
-      //return the name of the file
       return file.path.split('/').last;
     } else {
       return '';
@@ -152,6 +150,14 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Extended Vigenere Cipher & RC4'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.restorablePushNamed(context, SettingsView.routeName);
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -208,13 +214,14 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
                 ),
               ],
             ),
+            const SizedBox(height: 8),
             _isTextMode
                 ? TextField(
                     controller: _inputTextController,
                     decoration: InputDecoration(
                       labelText: _isEncryptMode
                           ? 'Plain text'
-                          : 'Cipher text (base 64)', // Change label based on input mode
+                          : 'Cipher text (base 64)',
                     ),
                   )
                 : Column(
@@ -236,7 +243,7 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
                         readOnly: true,
                       ),
                     ],
-                  ), // Hide text input when file mode is selected
+                  ),
             const SizedBox(height: 16),
             TextField(
               controller: _keyTextController,
@@ -252,24 +259,15 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
             const SizedBox(height: 16),
             const Text('Result:',
                 style: TextStyle(fontWeight: FontWeight.bold)),
+            ElevatedButton(
+              onPressed: _saveToFile,
+              child: const Text('Download'),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 child: Text(_resultText),
               ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _saveToFile,
-              child: const Text('Download'),
-            ),
-            // const SizedBox(height: 16),
-            // const Text('Base 64:',
-            //     style: TextStyle(fontWeight: FontWeight.bold)),
-            // Expanded(
-            //   child: SingleChildScrollView(
-            //     child: Text(_resultBase64),
-            //   ),
-            // ),
           ],
         ),
       ),
