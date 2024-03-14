@@ -21,7 +21,9 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
   late TextEditingController _inputTextController;
   late TextEditingController _keyTextController;
   late String _resultText;
-  late String _fileType = '.txt';
+  late String _fileType = 'txt';
+  late List<int> _fileInput;
+  late List<int> _fileOutput;
   bool _isEncryptMode = true;
   bool _isTextMode = true;
 
@@ -31,6 +33,8 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
     _inputTextController = TextEditingController();
     _keyTextController = TextEditingController();
     _resultText = '';
+    _fileInput = [];
+    _fileOutput = [];
   }
 
   @override
@@ -43,9 +47,13 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
   Future<void> _processData() async {
     String key = _keyTextController.text;
     String inputText = _inputTextController.text;
-    _resultText = _isEncryptMode
-        ? encryptText(inputText, key)
-        : decryptText(inputText, key);
+    if (_isTextMode) {
+      _resultText = _isEncryptMode
+          ? encryptText(inputText, key)
+          : decryptText(inputText, key);
+    } else {
+      _resultText = _isEncryptMode ? encryptFile(key) : decryptFile(key);
+    }
 
     setState(() {});
   }
@@ -78,14 +86,39 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
     return '';
   }
 
+  String encryptFile(String key) {
+    if (key.isNotEmpty && _fileInput.isNotEmpty) {
+      List<int> keyBytes = key.codeUnits;
+      RC4 rc4 = RC4(keyBytes);
+      List<int> resultBytes = rc4.encrypt(_fileInput);
+      _fileOutput = resultBytes;
+      return base64Encode(resultBytes);
+    }
+    return "Please enter a valid key and input text";
+  }
+
+  String decryptFile(String key) {
+    if (_fileInput.isNotEmpty && key.isNotEmpty) {
+      List<int> keyBytes = key.codeUnits;
+
+      RC4 rc4 = RC4(keyBytes);
+      List<int> decryptedBytes = rc4.decrypt(_fileInput);
+      _fileOutput = decryptedBytes;
+      return base64Encode(decryptedBytes);
+    }
+
+    return "Please enter a valid key and input text";
+  }
+
   Future<String> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       File file = File(result.files.single.path!);
       _fileType = result.files.single.extension!;
       List<int> fileBytes = await file.readAsBytes();
-      String fileContents = String.fromCharCodes(fileBytes);
-      return fileContents;
+      _fileInput = fileBytes;
+      //return the name of the file
+      return file.path.split('/').last;
     } else {
       return '';
     }
@@ -94,10 +127,15 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
   Future<void> _saveToFile() async {
     try {
       final Directory directory = Directory('/storage/emulated/0/Download/');
-      final File file = File('${directory.path}/result.$_fileType');
+      final File file = File(
+          '${directory.path}/result_${DateTime.now().millisecondsSinceEpoch}.$_fileType');
 
-      await file.writeAsString(_resultText,
-          mode: FileMode.write, encoding: utf8);
+      if (_isTextMode) {
+        await file.writeAsString(_resultText,
+            mode: FileMode.write, encoding: utf8);
+      } else {
+        await file.writeAsBytes(_fileOutput, mode: FileMode.write);
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('File saved successfully')),
@@ -149,6 +187,11 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
                     if (value != null) {
                       setState(() {
                         _isTextMode = value;
+                        _fileType = '.txt';
+                        _fileInput = [];
+                        _fileOutput = [];
+                        _inputTextController.clear();
+                        _resultText = '';
                       });
                     }
                   },
@@ -186,6 +229,7 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
                       const SizedBox(height: 16),
                       TextField(
                         controller: _inputTextController,
+                        enabled: false,
                         decoration: const InputDecoration(
                           labelText: 'File Contents',
                         ),
