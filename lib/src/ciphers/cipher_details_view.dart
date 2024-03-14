@@ -71,6 +71,7 @@ class _CipherDetailsViewState extends State<CipherDetailsView> {
   }
 
   String decryptText(String input, String key) {
+    if (input.length % 4 != 0) input += '=' * (4 - input.length % 4);
     if (input.isNotEmpty && key.isNotEmpty) {
       List<int> keyBytes = key.codeUnits;
 

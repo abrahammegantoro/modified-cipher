@@ -14,7 +14,7 @@ class RC4 {
       j = (j + _s[i] + _key[i % _key.length]) % 256;
       int temp = _s[i];
       _s[i] = _s[j];
-      _s[j] = temp ^ _key[i % _key.length]; // XOR with the vigenere key
+      _s[j] = (temp + _key[i % _key.length]) % 256; // Shuffle with the vigenere key
     }
   }
 
